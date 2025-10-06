@@ -36,28 +36,38 @@ const RemoveButton = styled.TouchableOpacity`
 `;
 
 export default function FormProdutos({ route, navigation }) {
-  const produto = route.params?.produto;
-  const [name, setName] = useState(produto?.name || "");
-  const [quantity, setQuantity] = useState(produto?.quantity?.toString() || "");
-  const [price, setPrice] = useState(produto?.price?.toString() || "");
+  const product = route.params?.product;
+  const [name, setName] = useState(product?.name || "");
+  const [quantity, setQuantity] = useState(product?.quantity?.toString() || "");
+  const [price, setPrice] = useState(product?.price?.toString() || "");
+  console.log(name, quantity, price)
 
   async function handleSave() {
     const token = await AsyncStorage.getItem("token");
-    if (produto) {
-      await axios.put(`http://localhost:3000/products/${produto.id}`, { name, quantity, price }, {
+    console.log("Token enviado:", token);
+    if (product) {
+      await axios.put(`http://localhost:3000/products/${product.id}`, { name, quantity, price }, {
         headers: { Authorization: `Bearer ${token}` }
       });
     } else {
-      await axios.post("http://localhost:3000/products", { name, quantity, price }, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      console.log("Chegou:", product);
+        try {
+          await axios.post("http://localhost:3000/products", { name, quantity, price }, {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+        } catch (error) {
+          console.log(
+            "Erro ao criar produtos:",
+            error.response?.data || error.message
+          );
+        }
     }
     navigation.goBack();
   }
 
   async function handleRemove() {
     const token = await AsyncStorage.getItem("token");
-    await axios.delete(`http://localhost:3000/products/${produto.id}`, {
+    await axios.delete(`http://localhost:3000/products/${product.id}`, {
       headers: { Authorization: `Bearer ${token}` }
     });
     navigation.goBack();
@@ -69,9 +79,9 @@ export default function FormProdutos({ route, navigation }) {
       <Input placeholder="Quantidade" value={quantity} onChangeText={setQuantity} keyboardType="numeric" />
       <Input placeholder="Preço" value={price} onChangeText={setPrice} keyboardType="decimal-pad" />
       <Button onPress={handleSave}>
-        <ButtonText>{produto ? "Salvar Alterações" : "Adicionar Produto"}</ButtonText>
+        <ButtonText>{product ? "Salvar Alterações" : "Adicionar Produto"}</ButtonText>
       </Button>
-      {produto && (
+      {product && (
         <RemoveButton onPress={handleRemove}>
           <ButtonText>Remover Produto</ButtonText>
         </RemoveButton>

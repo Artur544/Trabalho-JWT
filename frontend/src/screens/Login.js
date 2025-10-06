@@ -41,14 +41,17 @@ const ErrorText = styled.Text`
 `;
 
 export default function Login({ navigation }) {
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
-  const [senha, setSenha] = useState("");
+  const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
   async function handleLogin() {
     setError("");
     try {
-      const res = await axios.post("http://localhost:3000/auth/login", { email, senha });
+      const res = await axios.post("http://localhost:3000/auth/login", { email, password });
+      console.log("Login:", res.data.token)
+      console.log("Admin:", res.data.user.role);
       await AsyncStorage.setItem("token", res.data.token);
       if (res.data.user.role === "ADMIN") {
         navigation.replace("PainelAdmin");
@@ -63,7 +66,7 @@ export default function Login({ navigation }) {
   async function handleRegister() {
     setError("");
     try {
-      await axios.post("http://localhost:3000/auth/register", { email, senha });
+      await axios.post("http://localhost:3000/auth/register", { name, email, password });
       setError("Cadastro realizado! Faça login.");
     } catch (err) {
       setError("Erro ao cadastrar.");
@@ -73,16 +76,21 @@ export default function Login({ navigation }) {
   return (
     <Container>
       <Input
+        placeholder="Nome"
+        value={name}
+        onChangeText={setName}
+        autoCapitalize="none"
+      />
+      <Input
         placeholder="E-mail"
         value={email}
         onChangeText={setEmail}
         autoCapitalize="none"
-        keyboardType="email-address"
       />
       <Input
         placeholder="Senha"
-        value={senha}
-        onChangeText={setSenha}
+        value={password}
+        onChangeText={setPassword}
         secureTextEntry
       />
       {error ? <ErrorText>{error}</ErrorText> : null}

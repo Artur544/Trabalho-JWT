@@ -3,6 +3,7 @@ import styled from "styled-components/native";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { FlatList } from "react-native";
+import { useIsFocused } from "@react-navigation/native";
 
 const Container = styled.View`
   flex: 1;
@@ -43,19 +44,22 @@ const AddButtonText = styled.Text`
 export default function Home({ navigation }) {
   const [produtos, setProdutos] = useState([]);
   const [busca, setBusca] = useState("");
+  const isFocused = useIsFocused();
 
   async function fetchProdutos() {
     const token = await AsyncStorage.getItem("token");
+    console.log("Token salvo no AsyncStorage:", token);
+    console.log("Parametro de busca:", busca);
     const res = await axios.get("http://localhost:3000/products", {
       headers: { Authorization: `Bearer ${token}` },
-      params: busca ? { nome: busca } : {},
+      params: busca ? { name: busca } : {},
     });
     setProdutos(res.data);
   }
 
   useEffect(() => {
-    fetchProdutos();
-  }, [busca]);
+    if (isFocused) fetchProdutos();
+  }, [isFocused, busca]);
 
   return (
     <Container>
@@ -66,10 +70,16 @@ export default function Home({ navigation }) {
       />
       <FlatList
         data={produtos}
-        keyExtractor={item => String(item.id)}
+        keyExtractor={(item) => String(item.id)}
         renderItem={({ item }) => (
-          <ProductItem onPress={() => navigation.navigate("FormProdutos", { produto: item })}>
-            <ProductText>{item.name} - {item.quantity} und - R$ {item.price}</ProductText>
+          <ProductItem
+            onPress={() =>
+              navigation.navigate("FormProdutos", { product: item })
+            }
+          >
+            <ProductText>
+              {item.name} - {item.quantity} und - R$ {item.price}
+            </ProductText>
           </ProductItem>
         )}
       />

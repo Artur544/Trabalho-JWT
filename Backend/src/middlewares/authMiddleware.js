@@ -1,5 +1,6 @@
 const jwt = require("jsonwebtoken");
-const { User } = require("@prisma/client");
+const { PrismaClient } = require("@prisma/client");
+const prisma = new PrismaClient();
 
 const authMiddleware = (roles = []) => {
   return async (req, res, next) => {
@@ -11,7 +12,7 @@ const authMiddleware = (roles = []) => {
       }
 
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
-      const user = await User.findUnique({ where: { id: decoded.id } });
+      const user = await prisma.user.findUnique({ where: { id: decoded.id } });
 
       if (!user) {
         throw new Error("Usuário não encontrado");
